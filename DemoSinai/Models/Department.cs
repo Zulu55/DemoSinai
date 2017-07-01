@@ -1,9 +1,9 @@
 ﻿namespace DemoSinai.Models
 {
+    using System.Collections.Generic;
     using System.ComponentModel.DataAnnotations;
     using System.ComponentModel.DataAnnotations.Schema;
 
-    [Table("Departamentos")]
     public class Department
     {
         [Key]
@@ -13,7 +13,8 @@
         [Required(ErrorMessage = "El campo {0} es obligatorio.")]
         [MaxLength(50, ErrorMessage = "El campo {0} puede tener máximo {1} carateres de longitud.")]
         [Index("Department_Name_Index", IsUnique = true)]
-        [Column("Nombre")]
         public string Name { get; set; }
+
+        public virtual ICollection<City> Cities { get; set; }
     }
 }

@@ -1,16 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Data.Entity;
-using System.Linq;
+﻿using System.Data.Entity;
 using System.Threading.Tasks;
-using System.Net;
-using System.Web;
-using System.Web.Mvc;
-using DemoSinai.Models;
-
 namespace DemoSinai.Controllers
 {
+    using System.Net;
+    using System.Web.Mvc;
+    using DemoSinai.Models;
+    using System;
+
     [Authorize]
     public class DepartmentsController : Controller
     {
@@ -19,7 +15,8 @@ namespace DemoSinai.Controllers
         // GET: Departments
         public async Task<ActionResult> Index()
         {
-            return View(await db.Departments.ToListAsync());
+            var departments = await db.Departments.ToListAsync();
+            return View(departments);
         }
 
         // GET: Departments/Details/5
@@ -44,17 +41,31 @@ namespace DemoSinai.Controllers
         }
 
         // POST: Departments/Create
-        // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
-        // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> Create([Bind(Include = "DepartmentId,Name")] Department department)
+        public async Task<ActionResult> Create(Department department)
         {
             if (ModelState.IsValid)
             {
                 db.Departments.Add(department);
-                await db.SaveChangesAsync();
-                return RedirectToAction("Index");
+                try
+                {
+                    await db.SaveChangesAsync();
+                    return RedirectToAction("Index");
+                }
+                catch (Exception ex)
+                {
+                    if (ex.InnerException != null &&
+                        ex.InnerException.InnerException != null &&
+                        ex.InnerException.InnerException.Message.Contains("Index"))
+                    {
+                        ModelState.AddModelError(string.Empty, "Ya existe un departamento con el mismo nombre.");
+                    }
+                    else
+                    {
+                        ModelState.AddModelError(string.Empty, ex.Message);
+                    }
+                }
             }
 
             return View(department);
@@ -67,26 +78,43 @@ namespace DemoSinai.Controllers
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            Department department = await db.Departments.FindAsync(id);
+
+            var department = await db.Departments.FindAsync(id);
+
             if (department == null)
             {
                 return HttpNotFound();
             }
+
             return View(department);
         }
 
         // POST: Departments/Edit/5
-        // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
-        // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> Edit([Bind(Include = "DepartmentId,Name")] Department department)
+        public async Task<ActionResult> Edit(Department department)
         {
             if (ModelState.IsValid)
             {
                 db.Entry(department).State = EntityState.Modified;
-                await db.SaveChangesAsync();
-                return RedirectToAction("Index");
+                try
+                {
+                    await db.SaveChangesAsync();
+                    return RedirectToAction("Index");
+                }
+                catch (Exception ex)
+                {
+                    if (ex.InnerException != null &&
+                        ex.InnerException.InnerException != null &&
+                        ex.InnerException.InnerException.Message.Contains("Index"))
+                    {
+                        ModelState.AddModelError(string.Empty, "Ya existe un departamento con el mismo nombre.");
+                    }
+                    else
+                    {
+                        ModelState.AddModelError(string.Empty, ex.Message);
+                    }
+                }
             }
             return View(department);
         }

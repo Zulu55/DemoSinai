@@ -17,5 +17,9 @@
         public DbSet<School> Schools { get; set; }
 
         public DbSet<Department> Departments { get; set; }
+
+        public System.Data.Entity.DbSet<DemoSinai.Models.City> Cities { get; set; }
+
+        public System.Data.Entity.DbSet<DemoSinai.Models.Student> Students { get; set; }
     }
 }

@@ -1,5 +1,6 @@
 ﻿namespace DemoSinai.Models
 {
+    using System.Collections.Generic;
     using System.ComponentModel.DataAnnotations;
 
     public class School
@@ -19,5 +20,7 @@
         [Display(Name = "Dirección")]
         [MaxLength(100, ErrorMessage = "El campo {0} puede tener máximo {1} carateres de longitud.")]
         public string Address { get; set; }
+
+        public virtual ICollection<Student> Students { get; set; }
     }
 }
