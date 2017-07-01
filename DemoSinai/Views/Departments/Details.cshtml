@@ -4,10 +4,10 @@
     ViewBag.Title = "Details";
 }
 
-<h2>Details</h2>
+<h2>Detalles</h2>
 
 <div>
-    <h4>Department</h4>
+    <h4>Departamento</h4>
     <hr />
     <dl class="dl-horizontal">
         <dt>
@@ -21,6 +21,73 @@
     </dl>
 </div>
 <p>
-    @Html.ActionLink("Edit", "Edit", new { id = Model.DepartmentId }) |
-    @Html.ActionLink("Back to List", "Index")
+    @Html.ActionLink("Nueva Ciudad", "CreateCity", 
+    new { id = Model.DepartmentId }, 
+    new { @class = "dialog-window btn btn-primary" })
+    @Html.ActionLink("Regresar", "Index", new { }, new { @class = "btn btn-success" })
 </p>
+
+@if (Model.Cities.Count == 0)
+{
+    <h3>No hay ciuadades registradas.</h3>
+}
+else
+{
+    <table class="table">
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Cities.FirstOrDefault().Name)
+            </th>
+            <th></th>
+        </tr>
+
+        @foreach (var item in Model.Cities)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Name)
+                </td>
+                <td>
+                    @Html.ActionLink("Editar", "EditCity", new { id = item.CityId }, new { @class="btn btn-warning" })
+                    @Html.ActionLink("Borrar", "DeleteCity", new { id = item.CityId }, new { @class = "btn btn-danger" })
+                </td>
+            </tr>
+        }
+    </table>
+}
+
+<div class="modal fade" id="AddCity" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" data-backdrop="false">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h2 class="modal-title"></h2>
+            </div>
+            <div class="modal-body"><div class="te">Please wait...</div></div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $("body").on("click", "a.dialog-window", null, function (e) {
+                e.preventDefault();
+                var $link = $(this);
+                var title = $link.text();
+                $('#AddCity .modal-title').html(title);
+                var url = $(this).attr('href');
+                if (url.indexOf('#') == 0) {
+                    $('#AddCity').modal('show');
+                }
+                else {
+                    $.get(url, function (data) {
+                        $('#AddCity .te').html(data);
+                        $('#AddCity').modal();
+                    }).success(function () { $('input:text:visible:first').focus(); });
+                }
+            });
+        });
+    </script>
+}

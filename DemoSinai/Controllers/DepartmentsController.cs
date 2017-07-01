@@ -12,6 +12,38 @@ namespace DemoSinai.Controllers
     {
         private DataContext db = new DataContext();
 
+        public async Task<ActionResult> CreateCity(int? id)
+        {
+            if (id == null)
+            {
+                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+            }
+
+            var department = await db.Departments.FindAsync(id);
+
+            if (department == null)
+            {
+                return HttpNotFound();
+            }
+
+            var city = new City { DepartmentId = department.DepartmentId, };
+            return PartialView(city);
+        }
+
+        [HttpPost]
+        public async Task<ActionResult> CreateCity(City city)
+        {
+            if (ModelState.IsValid)
+            {
+                db.Cities.Add(city);
+                await db.SaveChangesAsync();
+                return RedirectToAction(string.Format("Details/{0}", city.DepartmentId));
+            }
+
+            return View(city);
+        }
+
+
         // GET: Departments
         public async Task<ActionResult> Index()
         {
@@ -139,10 +171,29 @@ namespace DemoSinai.Controllers
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> DeleteConfirmed(int id)
         {
-            Department department = await db.Departments.FindAsync(id);
+            var department = await db.Departments.FindAsync(id);
             db.Departments.Remove(department);
-            await db.SaveChangesAsync();
-            return RedirectToAction("Index");
+            try
+            {
+                await db.SaveChangesAsync();
+                return RedirectToAction("Index");
+
+            }
+            catch (Exception ex)
+            {
+                if (ex.InnerException != null &&
+                    ex.InnerException.InnerException != null &&
+                    ex.InnerException.InnerException.Message.Contains("REFERENCE"))
+                {
+                    ModelState.AddModelError(string.Empty, "No se puede borrar el departamento porque tiene ciudades asociadas.");
+                }
+                else
+                {
+                    ModelState.AddModelError(string.Empty, ex.Message);
+                }
+            }
+
+            return View(department);
         }
 
         protected override void Dispose(bool disposing)

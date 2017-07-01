@@ -18,8 +18,8 @@
 
         public DbSet<Department> Departments { get; set; }
 
-        public System.Data.Entity.DbSet<DemoSinai.Models.City> Cities { get; set; }
+        public DbSet<City> Cities { get; set; }
 
-        public System.Data.Entity.DbSet<DemoSinai.Models.Student> Students { get; set; }
+        public DbSet<Student> Students { get; set; }
     }
 }

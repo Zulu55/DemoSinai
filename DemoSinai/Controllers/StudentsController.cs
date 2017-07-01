@@ -1,16 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Data.Entity;
-using System.Linq;
-using System.Threading.Tasks;
-using System.Net;
-using System.Web;
-using System.Web.Mvc;
-using DemoSinai.Models;
-
-namespace DemoSinai.Controllers
+﻿namespace DemoSinai.Controllers
 {
+    using System.Data.Entity;
+    using System.Threading.Tasks;
+    using System.Net;
+    using System.Web.Mvc;
+    using Models;
+    using Helpers;
+    using System;
+    using System.Linq;
+
+    [Authorize]
     public class StudentsController : Controller
     {
         private DataContext db = new DataContext();
@@ -40,29 +39,75 @@ namespace DemoSinai.Controllers
         // GET: Students/Create
         public ActionResult Create()
         {
-            ViewBag.CityId = new SelectList(db.Cities, "CityId", "Name");
+            ViewBag.DepartmentId = new SelectList(db.Departments, "DepartmentId", "Name");
+            ViewBag.CityId = new SelectList(db.Cities.Where(c => c.DepartmentId == db.Departments.FirstOrDefault().DepartmentId), "CityId", "Name");
             ViewBag.SchoolId = new SelectList(db.Schools, "SchoolId", "Name");
             return View();
         }
 
         // POST: Students/Create
-        // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
-        // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> Create([Bind(Include = "StudentId,FirstName,LastName,SchoolId,UserName,Picture,Phone,Address,CityId")] Student student)
+        public async Task<ActionResult> Create(StudentView view)
         {
             if (ModelState.IsValid)
             {
+                var pic = string.Empty;
+                var folder = "~/Content/Pictures";
+
+                if (view.PictureFile != null)
+                {
+                    pic = FilesHelper.UploadPhoto(view.PictureFile, folder);
+                    pic = string.Format("{0}/{1}", folder, pic);
+                }
+
+                var student = ToStudent(view);
+                student.Picture = pic;
+
                 db.Students.Add(student);
-                await db.SaveChangesAsync();
-                return RedirectToAction("Index");
+                try
+                {
+                    await db.SaveChangesAsync();
+                    return RedirectToAction("Index");
+                }
+                catch (Exception ex)
+                {
+                    if (ex.InnerException != null &&
+                        ex.InnerException.InnerException != null &&
+                        ex.InnerException.InnerException.Message.Contains("Index"))
+                    {
+                        ModelState.AddModelError(string.Empty, "Ya existe un departamento con el mismo nombre.");
+                    }
+                    else
+                    {
+                        ModelState.AddModelError(string.Empty, ex.Message);
+                    }
+                }
             }
 
-            ViewBag.CityId = new SelectList(db.Cities, "CityId", "Name", student.CityId);
-            ViewBag.SchoolId = new SelectList(db.Schools, "SchoolId", "Name", student.SchoolId);
-            return View(student);
+            ViewBag.CityId = new SelectList(db.Cities, "CityId", "Name", view.CityId);
+            ViewBag.SchoolId = new SelectList(db.Schools, "SchoolId", "Name", view.SchoolId);
+            return View(view);
         }
+
+        private Student ToStudent(StudentView view)
+        {
+            return new Student
+            {
+                Address = view.Address,
+                City = view.City,
+                CityId = view.CityId,
+                FirstName = view.FirstName,
+                LastName = view.LastName,
+                Phone = view.Phone,
+                Picture = view.Picture,
+                School = view.School,
+                SchoolId = view.SchoolId,
+                StudentId = view.StudentId,
+                UserName = view.UserName,
+            };
+        }
+
 
         // GET: Students/Edit/5
         public async Task<ActionResult> Edit(int? id)
@@ -71,32 +116,81 @@ namespace DemoSinai.Controllers
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            Student student = await db.Students.FindAsync(id);
+
+            var student = await db.Students.FindAsync(id);
+
             if (student == null)
             {
                 return HttpNotFound();
             }
+
             ViewBag.CityId = new SelectList(db.Cities, "CityId", "Name", student.CityId);
             ViewBag.SchoolId = new SelectList(db.Schools, "SchoolId", "Name", student.SchoolId);
-            return View(student);
+            var view = ToView(student);
+            return View(view);
+        }
+
+        private StudentView ToView(Student student)
+        {
+            return new StudentView
+            {
+                Address = student.Address,
+                City = student.City,
+                CityId = student.CityId,
+                FirstName = student.FirstName,
+                LastName = student.LastName,
+                Phone = student.Phone,
+                Picture = student.Picture,
+                School = student.School,
+                SchoolId = student.SchoolId,
+                StudentId = student.StudentId,
+                UserName = student.UserName,
+            };
         }
 
         // POST: Students/Edit/5
-        // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
-        // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> Edit([Bind(Include = "StudentId,FirstName,LastName,SchoolId,UserName,Picture,Phone,Address,CityId")] Student student)
+        public async Task<ActionResult> Edit(StudentView view)
         {
             if (ModelState.IsValid)
             {
+                var pic = view.Picture;
+                var folder = "~/Content/Pictures";
+
+                if (view.PictureFile != null)
+                {
+                    pic = FilesHelper.UploadPhoto(view.PictureFile, folder);
+                    pic = string.Format("{0}/{1}", folder, pic);
+                }
+
+                var student = ToStudent(view);
+                student.Picture = pic;
+
                 db.Entry(student).State = EntityState.Modified;
-                await db.SaveChangesAsync();
-                return RedirectToAction("Index");
+                try
+                {
+                    await db.SaveChangesAsync();
+                    return RedirectToAction("Index");
+                }
+                catch (Exception ex)
+                {
+                    if (ex.InnerException != null &&
+                        ex.InnerException.InnerException != null &&
+                        ex.InnerException.InnerException.Message.Contains("Index"))
+                    {
+                        ModelState.AddModelError(string.Empty, "Ya existe un estudiante con el mismo email.");
+                    }
+                    else
+                    {
+                        ModelState.AddModelError(string.Empty, ex.Message);
+                    }
+                }
             }
-            ViewBag.CityId = new SelectList(db.Cities, "CityId", "Name", student.CityId);
-            ViewBag.SchoolId = new SelectList(db.Schools, "SchoolId", "Name", student.SchoolId);
-            return View(student);
+
+            ViewBag.CityId = new SelectList(db.Cities, "CityId", "Name", view.CityId);
+            ViewBag.SchoolId = new SelectList(db.Schools, "SchoolId", "Name", view.SchoolId);
+            return View(view);
         }
 
         // GET: Students/Delete/5
@@ -123,6 +217,13 @@ namespace DemoSinai.Controllers
             db.Students.Remove(student);
             await db.SaveChangesAsync();
             return RedirectToAction("Index");
+        }
+
+        public JsonResult GetCities(int departmentId)
+        {
+            db.Configuration.ProxyCreationEnabled = false;
+            var cities = db.Cities.Where(c => c.DepartmentId == departmentId);
+            return Json(cities);
         }
 
         protected override void Dispose(bool disposing)
