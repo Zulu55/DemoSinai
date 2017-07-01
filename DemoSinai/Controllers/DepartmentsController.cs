@@ -6,11 +6,102 @@ namespace DemoSinai.Controllers
     using System.Web.Mvc;
     using DemoSinai.Models;
     using System;
+    using Helpers;
+    using System.IO;
+    using System.Linq;
 
     [Authorize]
     public class DepartmentsController : Controller
     {
         private DataContext db = new DataContext();
+
+        public ActionResult Import()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<ActionResult> Import(ImportView view)
+        {
+            if (ModelState.IsValid)
+            {
+                var deparmentsFile = string.Empty;
+                var citiesFile = string.Empty;
+                var folder = "~/Content/Files";
+
+                if (view.DeparmentsFile != null)
+                {
+                    deparmentsFile = FilesHelper.UploadPhoto(view.DeparmentsFile, folder);
+                    deparmentsFile = Path.Combine(Server.MapPath(folder), deparmentsFile);
+                }
+
+                if (view.CitiesFile != null)
+                {
+                    citiesFile = FilesHelper.UploadPhoto(view.CitiesFile, folder);
+                    citiesFile = Path.Combine(Server.MapPath(folder), citiesFile);
+                }
+
+                // Import Deparments
+                var line = string.Empty;
+                var deparmentsStream = new StreamReader(deparmentsFile);
+                while ((line = deparmentsStream.ReadLine()) != null)
+                {
+                    var fields = line.Split(';');
+                    var deparmentCode = int.Parse(fields[0]);
+                    var oldDepartment = await db.Departments
+                        .Where(d => d.DeparmentCode == deparmentCode)
+                        .FirstOrDefaultAsync();
+                    if (oldDepartment == null)
+                    {
+                        var department = new Department
+                        {
+                            Name = fields[2],
+                            DeparmentCode = deparmentCode,
+                        };
+
+                        db.Departments.Add(department);
+                        await db.SaveChangesAsync();
+                    }
+                }
+
+                deparmentsStream.Close();
+
+                // Import Cities
+                line = string.Empty;
+                var citiesStream = new StreamReader(citiesFile);
+                while ((line = citiesStream.ReadLine()) != null)
+                {
+                    var fields = line.Split(';');
+                    var deparmentCode = int.Parse(fields[3]);
+                    var cityCode = int.Parse(fields[1]);
+                    var oldCity = await db.Cities
+                        .Where(c => c.CityCode == cityCode)
+                        .FirstOrDefaultAsync();
+                    if (oldCity == null)
+                    {
+                        var departament = await db.Departments
+                            .Where(d => d.DeparmentCode == deparmentCode)
+                            .FirstOrDefaultAsync();
+                        if (departament != null)
+                        {
+                            var city = new City
+                            {
+                                CityCode = cityCode,
+                                DepartmentId = departament.DepartmentId,
+                                Name = fields[2],
+                            };
+
+                            db.Cities.Add(city);
+                            await db.SaveChangesAsync();
+                        }
+                    }
+                }
+
+                citiesStream.Close();
+            }
+
+            return RedirectToAction("Index");
+        }
 
         public async Task<ActionResult> CreateCity(int? id)
         {

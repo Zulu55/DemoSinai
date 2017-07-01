@@ -1,6 +1,7 @@
 ﻿namespace DemoSinai.Helpers
 {
-        using System.IO;
+    using System;
+    using System.IO;
     using System.Web;
 
     public class FilesHelper
@@ -18,6 +19,11 @@
             }
 
             return pic;
+        }
+
+        internal static string UploadPhoto(object pictureFile, string folder)
+        {
+            throw new NotImplementedException();
         }
     }
 }

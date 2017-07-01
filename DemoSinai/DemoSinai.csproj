@@ -213,6 +213,7 @@
     <Compile Include="Models\DataContext.cs" />
     <Compile Include="Models\Department.cs" />
     <Compile Include="Models\IdentityModels.cs" />
+    <Compile Include="Models\ImportView.cs" />
     <Compile Include="Models\ManageViewModels.cs" />
     <Compile Include="Models\School.cs" />
     <Compile Include="Models\Student.cs" />
@@ -305,9 +306,11 @@
     <Content Include="Views\Students\Edit.cshtml" />
     <Content Include="Views\Students\Index.cshtml" />
     <Content Include="Views\Departments\CreateCity.cshtml" />
+    <Content Include="Views\Departments\Import.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
+    <Folder Include="Content\Files\" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="fonts\glyphicons-halflings-regular.woff" />

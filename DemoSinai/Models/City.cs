@@ -23,6 +23,8 @@ namespace DemoSinai.Models
         [Index("City_Name_DepartmentId_Index", IsUnique = true, Order = 2)]
         public int DepartmentId { get; set; }
 
+        public int CityCode { get; set; }
+
         public virtual Department Department { get; set; }
 
         public virtual ICollection<Student> Students { get; set; }

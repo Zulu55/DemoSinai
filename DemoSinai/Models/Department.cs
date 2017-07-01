@@ -15,6 +15,8 @@
         [Index("Department_Name_Index", IsUnique = true)]
         public string Name { get; set; }
 
+        public int DeparmentCode { get; set; }
+
         public virtual ICollection<City> Cities { get; set; }
     }
 }
