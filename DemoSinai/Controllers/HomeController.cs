@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DemoSinai.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
@@ -8,9 +9,12 @@ namespace DemoSinai.Controllers
 {
     public class HomeController : Controller
     {
+        private DataContext db = new DataContext();
+
         public ActionResult Index()
         {
-            return View();
+            var student = db.Students.Where(s => s.UserName == User.Identity.Name).FirstOrDefault();
+            return View(student);
         }
 
         public ActionResult About()
@@ -25,6 +29,15 @@ namespace DemoSinai.Controllers
             ViewBag.Message = "Your contact page.";
 
             return View();
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                db.Dispose();
+            }
+            base.Dispose(disposing);
         }
     }
 }

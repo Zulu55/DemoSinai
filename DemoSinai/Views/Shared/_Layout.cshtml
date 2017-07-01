@@ -36,9 +36,12 @@
                     <li>@Html.ActionLink("Inicio", "Index", "Home")</li>
                     <li>@Html.ActionLink("Acerca", "About", "Home")</li>
                     <li>@Html.ActionLink("Contactenos", "Contact", "Home")</li>
-                    <li>@Html.ActionLink("Colegios", "Index", "Schools")</li>
-                    <li>@Html.ActionLink("Departamentos", "Index", "Departments")</li>
-                    <li>@Html.ActionLink("Ciudades", "Index", "Cities")</li>
+                    @if (User.IsInRole("Admin"))
+                    {
+                        <li>@Html.ActionLink("Colegios", "Index", "Schools")</li>
+                        <li>@Html.ActionLink("Departamentos", "Index", "Departments")</li>
+                        <li>@Html.ActionLink("Ciudades", "Index", "Cities")</li>
+                    }
                     <li>@Html.ActionLink("Estudiantes", "Index", "Students")</li>
                 </ul>
                 @Html.Partial("_LoginPartial")

@@ -4,13 +4,13 @@ namespace DemoSinai.Controllers
 {
     using System.Net;
     using System.Web.Mvc;
-    using DemoSinai.Models;
+    using Models;
     using System;
     using Helpers;
     using System.IO;
     using System.Linq;
 
-    [Authorize]
+    [Authorize(Roles = "Admin")]
     public class DepartmentsController : Controller
     {
         private DataContext db = new DataContext();

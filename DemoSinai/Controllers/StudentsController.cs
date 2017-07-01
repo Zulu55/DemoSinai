@@ -9,7 +9,6 @@
     using System;
     using System.Linq;
 
-    [Authorize]
     public class StudentsController : Controller
     {
         private DataContext db = new DataContext();
@@ -22,6 +21,7 @@
         }
 
         // GET: Students/Details/5
+        [Authorize(Roles = "Student, Admin")]
         public async Task<ActionResult> Details(int? id)
         {
             if (id == null)
@@ -37,6 +37,7 @@
         }
 
         // GET: Students/Create
+        [Authorize(Roles = "Admin")]
         public ActionResult Create()
         {
             ViewBag.DepartmentId = new SelectList(db.Departments, "DepartmentId", "Name");
@@ -68,6 +69,7 @@
                 try
                 {
                     await db.SaveChangesAsync();
+                    UsersHelper.CreateUserASP(student.UserName, "Student");
                     return RedirectToAction("Index");
                 }
                 catch (Exception ex)
@@ -110,6 +112,7 @@
 
 
         // GET: Students/Edit/5
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult> Edit(int? id)
         {
             if (id == null)
@@ -194,6 +197,7 @@
         }
 
         // GET: Students/Delete/5
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult> Delete(int? id)
         {
             if (id == null)

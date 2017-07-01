@@ -1,10 +1,16 @@
-﻿@{
+﻿@model DemoSinai.Models.Student
+@{
     ViewBag.Title = "Home Page";
 }
 
 <div class="jumbotron">
     <h1>Sinai</h1>
     <p class="lead">Sistema de información académica institucional.</p>
+    @if (User.IsInRole("Student") && Model != null && !string.IsNullOrEmpty(Model.Picture))
+    {
+        <img src="@Url.Content(Model.Picture)" alt="Image"
+             style="width:200px;height:200px;max-width: 100%; height: auto;" />
+    }
 </div>
 
 <div class="row">

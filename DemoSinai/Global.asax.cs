@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DemoSinai.Helpers;
+using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
@@ -16,10 +17,18 @@ namespace DemoSinai
             Database.SetInitializer(
                 new MigrateDatabaseToLatestVersion<Models.DataContext, 
                 Migrations.Configuration>());
+            CheckSuperUserAndRoles();
             AreaRegistration.RegisterAllAreas();
             FilterConfig.RegisterGlobalFilters(GlobalFilters.Filters);
             RouteConfig.RegisterRoutes(RouteTable.Routes);
             BundleConfig.RegisterBundles(BundleTable.Bundles);
+        }
+
+        private void CheckSuperUserAndRoles()
+        {
+            UsersHelper.CheckRole("Admin");
+            UsersHelper.CheckRole("Student");
+            UsersHelper.CheckSuperUser();
         }
     }
 }
